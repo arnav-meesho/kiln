@@ -1,0 +1,28 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp(ql:quickload '() :silent t)
+  )
+
+(defpackage :ros.script.install-kiln.3934610727
+  (:use :cl))
+(in-package :ros.script.install-kiln.3934610727)
+(ql:quickload 'inferior-shell)
+(defun kiln-installed-p ()
+  (loop for dir in ql:*local-project-directories*
+	:when (probe-file (merge-pathnames "kiln" dir))
+	:return t
+	:finally (return nil)))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (unless (kiln-installed-p)
+    (uiop:with-current-directory
+     (car ql:*local-project-directories*)
+     (inferior-shell:run "git clone https://github.com/ruricolist/kiln"))
+    (asdf:make "kiln")))
+;;; vim: set ft=lisp lisp:
